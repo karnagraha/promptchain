@@ -33,7 +33,13 @@ def test_multi_pipeline():
 
 def test_condition_pipeline():
     p = pipeline.Pipeline()
-    h = handler.ConditionHandler(lambda x: x == "input", service.Loopback())
+    def fn(input, service_unused):
+        if input == "input":
+            return handler.HandlerResult(handler.HandlerStatus.SUCCESS_TRUE, input, input, input)
+        else:
+            return handler.HandlerResult(handler.HandlerStatus.SUCCESS_FALSE, input, input, input)
+
+    h = handler.ConditionHandler(fn, service.Loopback())
     p.add_handler(h)
     r = p.handle("input")
     assert r.status == handler.HandlerStatus.SUCCESS_TRUE

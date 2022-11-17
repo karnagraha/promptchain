@@ -25,7 +25,6 @@ class HandlerStatus(Enum):
 class Handler:
     """Basic handler that converts input to output via service."""
     def __init__(self, service):
-        """Initialize the handler with a result preprocessor."""
         self.service = service
 
     def get_prompt(self, input):
@@ -49,12 +48,11 @@ class PromptHandler(Handler):
 
 
 class ConditionHandler(Handler):
-    """Functions like an if statement, returns true or false."""
+    """Calls custom code in handler.  Must return a HandlerResult object."""
     def __init__(self, condition, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.condition = condition
 
     def handle(self, input):
         condition_fn = self.condition
-        status = HandlerStatus.SUCCESS_TRUE if condition_fn(input) else HandlerStatus.SUCCESS_FALSE
-        return HandlerResult(status, input, input, input)
+        return condition_fn(input, self.service)
