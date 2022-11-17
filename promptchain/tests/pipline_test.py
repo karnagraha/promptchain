@@ -18,3 +18,12 @@ def test_multi_pipeline():
     p.add_handler(h)
     p.add_handler(h)
     assert p.handle("input") == "input"
+
+def test_condition_pipeline():
+    p = pipeline.Pipeline()
+    h = handler.ConditionHandler(lambda x: x == "input", service.Loopback())
+    p.add_handler(h)
+    assert p.handle("input") == True
+    assert p.handle("not input") == False
+
+

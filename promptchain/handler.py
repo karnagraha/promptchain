@@ -1,11 +1,5 @@
 import re
 
-# Sample Preprocessor that returns True if the input appears to be true boolean value like
-# "true", "1", "t", "y", and otherwise returns False
-def BoolPreprocessor(text):
-    if re.match(r"^(true|1|t|y)$", text, re.IGNORECASE):
-        return True
-    return False
 
 class Handler:
     """Basic handler that converts input to output via service."""
@@ -30,3 +24,13 @@ class PromptHandler(Handler):
 
     def get_prompt(self, input):
         return self.prompt.format(input)
+
+class ConditionHandler(Handler):
+    """Functions like an if statement, returns true or false."""
+    def __init__(self, condition, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.condition = condition
+
+    def handle(self, input):
+        condition_fn = self.condition
+        return condition_fn(input)
