@@ -1,5 +1,26 @@
 import re
 
+from enum import Enum
+
+class HandlerResult:
+    def __init__(self, status, input, prompt, output):
+        self.status = status
+        self.input = input
+        self.prompt = prompt
+        self.output = output
+
+    def __str__(self):
+        return self.output
+    
+    def __bool__(self):
+        return self.status == HandlerStatus.SUCCESS
+
+class HandlerStatus(Enum):
+    FAILURE = 0
+    SUCCESS = 1
+    SUCCESS_TRUE = 1
+    SUCCESS_FALSE = 2
+
 
 class Handler:
     """Basic handler that converts input to output via service."""
@@ -13,7 +34,8 @@ class Handler:
     def handle(self, input):
         prompt = self.get_prompt(input)
         output = self.service.call(prompt)
-        return output
+        result = HandlerResult(HandlerStatus.SUCCESS, input, prompt, output)
+        return result
 
 
 class PromptHandler(Handler):
@@ -25,6 +47,7 @@ class PromptHandler(Handler):
     def get_prompt(self, input):
         return self.prompt.format(input)
 
+
 class ConditionHandler(Handler):
     """Functions like an if statement, returns true or false."""
     def __init__(self, condition, *args, **kwargs):
@@ -33,4 +56,5 @@ class ConditionHandler(Handler):
 
     def handle(self, input):
         condition_fn = self.condition
-        return condition_fn(input)
+        status = HandlerStatus.SUCCESS_TRUE if condition_fn(input) else HandlerStatus.SUCCESS_FALSE
+        return HandlerResult(status, input, input, input)

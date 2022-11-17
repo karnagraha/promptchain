@@ -1,3 +1,4 @@
+from promptchain.handler import HandlerStatus
 class Pipeline:
     """A pipeline is an ordered collection of handlers, where the output of one serves as the input for the next."""
     def __init__(self):
@@ -6,15 +7,9 @@ class Pipeline:
     def add_handler(self, handler):
         self.handlers.append(handler)
 
-    def handle(self, input):
-        output = None
-
+    def handle(self, text):
+        result = None
         for handler in self.handlers:
-            output = handler.handle(input)
-            if output is None or output is False:
-                break
-            elif output is True:
-                continue
-            # setup loop for next execution
-            input = output
-        return output
+            result = handler.handle(text)
+            text = result.output
+        return result
