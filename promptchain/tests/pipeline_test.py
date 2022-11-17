@@ -20,16 +20,6 @@ def test_prompt_pipeline():
     assert r.prompt == "input test"
     assert r.output == "input test"
 
-def test_multi_pipeline():
-    p = pipeline.Pipeline()
-    h = handler.Handler(service.Loopback())
-    p.add_handler(h)
-    p.add_handler(h)
-    r = p.handle("input")
-    assert r.status == handler.HandlerStatus.SUCCESS
-    assert r.input == "input"
-    assert r.prompt == "input"
-    assert r.output == "input"
 
 def test_condition_pipeline():
     p = pipeline.Pipeline()
@@ -54,3 +44,36 @@ def test_condition_pipeline():
     assert r.input == "not input"
     assert r.prompt == "not input"
     assert r.output == "not input"
+
+
+def test_multi_pipeline():
+    p = pipeline.Pipeline()
+    s = service.Loopback()
+    def fn(input, service_unused):
+        if input == "input":
+            return handler.HandlerResult(handler.HandlerStatus.SUCCESS_TRUE, input, input, input)
+        else:
+            return handler.HandlerResult(handler.HandlerStatus.SUCCESS_FALSE, input, input, input)
+    h = handler.ConditionHandler(fn, s)
+    name = p.add_handler(h)
+
+    # set a downstream result for each result from the condition handler
+    h2 = handler.PromptHandler("{} success", s)
+    name2 = p.add_handler(h2, name, handler.HandlerStatus.SUCCESS_TRUE)
+    h3 = handler.PromptHandler("{} fail", s)
+    name3 = p.add_handler(h3, name, handler.HandlerStatus.SUCCESS_FALSE)
+
+
+    r = p.handle("input")
+    assert r.status == handler.HandlerStatus.SUCCESS
+    assert r.input == "input"
+    assert r.prompt == "input success"
+    assert r.output == "input success"
+
+    r = p.handle("not input")
+    assert r.status == handler.HandlerStatus.SUCCESS
+    assert r.input == "not input"
+    assert r.prompt == "not input fail"
+    assert r.output == "not input fail"
+
+
