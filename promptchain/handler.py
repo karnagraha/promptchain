@@ -20,7 +20,7 @@ class HandlerStatus(Enum):
     SUCCESS = 1
     SUCCESS_TRUE = 1
     SUCCESS_FALSE = 2
-
+    SUCCESS_CLASSIFIED = 3
 
 class Handler:
     """Basic handler that converts input to output via service."""
@@ -56,3 +56,27 @@ class ConditionHandler(Handler):
     def handle(self, input):
         condition_fn = self.condition
         return condition_fn(input, self.service)
+
+class ClassificationHandler(Handler):
+    def __init__(self, classifications, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.classifications = classifications
+
+    def get_prompt(self, input):
+        prompt = "Classify the following text:\n\n"
+        for classification, examples in self.classifications.items():
+            for example in examples:
+                prompt = prompt + "TEXT: " + example + "\nCLASS: " + classification + "\n\n"
+        prompt = prompt + "TEXT: " + input + "\nCLASS:"
+        return prompt
+
+    def handle(self, input):
+        prompt = self.get_prompt(input)
+        output = self.service.call(prompt)
+        result = HandlerResult(HandlerStatus.SUCCESS_CLASSIFIED, input, prompt, output)
+        return result
+
+
+
+
+

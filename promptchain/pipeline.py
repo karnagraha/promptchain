@@ -25,18 +25,21 @@ class Pipeline:
         return name
 
     def handle(self, text):
-        result = None
         handler_name = self.first
+        result = None
         while handler_name is not None:
-            print(f"handling {text} with {handler_name}")
-            handler = self.handlers[handler_name]
-            outputs = self.outputs[handler_name]
+            result = self.handlers[handler_name].handle(text)
 
-            result = handler.handle(text)
-            # set up next loop
-            text = result.output
+            next_handler_key = result.status
+            # in the case of categorization, the handler is specififed by the result output.
+            if result.status == HandlerStatus.SUCCESS_CLASSIFIED:
+                next_handler_key = result.output
+            else:
+                # update text for next query
+                # in the case of a classification handler we don't want to update the text
+                text = result.output
             try:
-                handler_name = outputs[result.status]
+                handler_name = self.outputs[handler_name][next_handler_key]
             except KeyError:
                 handler_name = None
         return result

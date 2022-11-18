@@ -77,3 +77,32 @@ def test_multi_pipeline():
     assert r.output == "not input fail"
 
 
+def test_classification_pipeline():
+    p = pipeline.Pipeline()
+    # It's difficult to test this without an actualy LLM
+
+    # classification will use a static handler to classify the input to the first category
+    h = handler.ClassificationHandler({
+        "category1": ["input1", "input2"],
+        "category2": ["input3", "input4"],
+    }, service.Static("category1"))
+    name = p.add_handler(h)
+
+    # set a downstream result for each result from the condition handler
+    h2 = handler.PromptHandler("{} success", service.Loopback())
+    p.add_handler(h2, name, "category1")
+    h3 = handler.PromptHandler("{} fail", service.Loopback())
+    p.add_handler(h3, name, "category2")
+
+    r = p.handle("input1")
+    assert r.status == handler.HandlerStatus.SUCCESS
+    assert r.input == "input1"
+    assert r.prompt == "input1 success"
+    assert r.output == "input1 success"
+
+
+
+
+
+
+

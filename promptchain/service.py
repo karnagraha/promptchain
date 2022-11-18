@@ -19,8 +19,17 @@ class GPT3:
         return response.choices[0].text
 
 class Loopback:
+    """Loopback service just repeats what it receives, for testing."""
     def __init__(self, *args, **kwargs):
         pass
     
     def call(self, prompt):
         return prompt
+
+class Static:
+    """Static service just returns a static string, for testing."""
+    def __init__(self, output, *args, **kwargs):
+        self.output = output
+    
+    def call(self, prompt):
+        return self.output
