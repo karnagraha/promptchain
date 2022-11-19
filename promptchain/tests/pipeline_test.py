@@ -7,8 +7,8 @@ def test_pipeline():
     r = p.handle("input")
     assert r.status == handler.HandlerStatus.SUCCESS
     assert r.input == "input"
-    assert r.prompt == "input"
-    assert r.output == "input"
+    assert r.prompt[0] == "input"
+    assert r.output[0] == "input"
 
 def test_prompt_pipeline():
     p = pipeline.Pipeline()
@@ -17,8 +17,8 @@ def test_prompt_pipeline():
     r = p.handle("input")
     assert r.status == handler.HandlerStatus.SUCCESS
     assert r.input == "input"
-    assert r.prompt == "input test"
-    assert r.output == "input test"
+    assert r.prompt[0] == "input test"
+    assert r.output[0] == "input test"
 
 
 def test_condition_pipeline():
@@ -35,15 +35,15 @@ def test_condition_pipeline():
     assert r.status == handler.HandlerStatus.SUCCESS_TRUE
     assert r.status == handler.HandlerStatus.SUCCESS
     assert r.input == "input"
-    assert r.prompt == "input"
-    assert r.output == "input"
+    assert r.prompt[0] == "input"
+    assert r.output[0] == "input"
 
     r = p.handle("not input")
     assert r.status == handler.HandlerStatus.SUCCESS_FALSE
     assert r.status != handler.HandlerStatus.SUCCESS
     assert r.input == "not input"
-    assert r.prompt == "not input"
-    assert r.output == "not input"
+    assert r.prompt[0] == "not input"
+    assert r.output[0] == "not input"
 
 
 def test_multi_pipeline():
@@ -67,14 +67,14 @@ def test_multi_pipeline():
     r = p.handle("input")
     assert r.status == handler.HandlerStatus.SUCCESS
     assert r.input == "input"
-    assert r.prompt == "input success"
-    assert r.output == "input success"
+    assert r.prompt[0] == "input success"
+    assert r.output[0] == "input success"
 
     r = p.handle("not input")
     assert r.status == handler.HandlerStatus.SUCCESS
     assert r.input == "not input"
-    assert r.prompt == "not input fail"
-    assert r.output == "not input fail"
+    assert r.prompt[0] == "not input fail"
+    assert r.output[0] == "not input fail"
 
 
 def test_classification_pipeline():
@@ -97,8 +97,8 @@ def test_classification_pipeline():
     r = p.handle("input1")
     assert r.status == handler.HandlerStatus.SUCCESS
     assert r.input == "input1"
-    assert r.prompt == "input1 success"
-    assert r.output == "input1 success"
+    assert r.prompt[0] == "input1 success"
+    assert r.output[0] == "input1 success"
 
 
 

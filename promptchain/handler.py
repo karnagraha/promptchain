@@ -6,14 +6,9 @@ class HandlerResult:
     def __init__(self, status, input, prompt, output):
         self.status = status
         self.input = input
-        self.prompt = prompt
-        self.output = output
+        self.prompt = [prompt]
+        self.output = [output]
 
-    def __str__(self):
-        return self.output
-    
-    def __bool__(self):
-        return self.status == HandlerStatus.SUCCESS
 
 class HandlerStatus(Enum):
     FAILURE = 0
@@ -73,10 +68,4 @@ class ClassificationHandler(Handler):
     def handle(self, input):
         prompt = self.get_prompt(input)
         output = self.service.call(prompt)
-        result = HandlerResult(HandlerStatus.SUCCESS_CLASSIFIED, input, prompt, output)
-        return result
-
-
-
-
-
+        return HandlerResult(HandlerStatus.SUCCESS_CLASSIFIED, input, prompt, output)
