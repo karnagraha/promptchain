@@ -7,7 +7,7 @@ def test_handler():
     assert r.output[0] == "input"
 
 def test_prompt_handler():
-    h = handler.PromptHandler("test", service.Loopback())
+    h = handler.PromptHandler("test")
     r = h.handle(["input"])
     assert r.status == handler.HandlerStatus.SUCCESS
     assert r.output[0] == "test"
@@ -15,7 +15,7 @@ def test_prompt_handler():
 def test_condition_handler():
     def fn(input, service_unused):
         return input == "input"
-    h = handler.ConditionHandler(fn, service.Loopback())
+    h = handler.ConditionHandler(fn)
     r = h.handle(["input"])
     assert r.status == handler.HandlerStatus.SUCCESS_TRUE
     assert r.status == handler.HandlerStatus.SUCCESS
@@ -31,7 +31,7 @@ def test_classification_handler():
         "cat1": ["input1", "input2"],
         "cat2": ["input3", "input4"],
     }
-    h = handler.ClassificationHandler(classifications, service.Loopback())
+    h = handler.ClassificationHandler(classifications)
     r = h.handle(["input"])
     assert r.status == handler.HandlerStatus.SUCCESS_CLASSIFIED
     assert r.input[0] == "input"
@@ -45,7 +45,7 @@ def test_classification_handler():
 
 
 def test_split_handler():
-    h = handler.SplitHandler(r"\. *", service.Loopback())
+    h = handler.SplitHandler(r"\. *")
     r = h.handle(["input1. input2."])
     assert r.status == handler.HandlerStatus.SUCCESS
     assert len(r.input) == 1
@@ -54,7 +54,7 @@ def test_split_handler():
     assert r.output[1] == "input2"
 
 def test_join_handler():
-    h = handler.JoinHandler(". ", service.Loopback())
+    h = handler.JoinHandler(". ")
     r = h.handle(["input1", "input2"])
     assert r.status == handler.HandlerStatus.SUCCESS
     assert len(r.input) == 2

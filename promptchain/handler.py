@@ -1,6 +1,7 @@
 import re
 
 from enum import Enum
+from promptchain import service
 
 class HandlerResult:
     # prompt and output are lists to allow for handlers with multiple outputs
@@ -20,7 +21,7 @@ class HandlerStatus(Enum):
 
 class Handler:
     """Base handler class that converts input to output via service. Not very useful on its own."""
-    def __init__(self, service):
+    def __init__(self, service=service.Loopback()):
         self.service = service
 
     def get_prompt(self, input):
