@@ -4,9 +4,10 @@ def test_pipeline():
     p = pipeline.Pipeline()
     h = handler.Handler(service.Loopback())
     p.add_handler(h)
-    r = p.handle("input")
+    r = p.handle(["input"])
     assert r.status == handler.HandlerStatus.SUCCESS
-    assert r.input == "input"
+    assert len(r.input) == 1
+    assert r.input[0] == "input"
     assert r.prompt[0] == "input"
     assert r.output[0] == "input"
 
@@ -14,34 +15,35 @@ def test_prompt_pipeline():
     p = pipeline.Pipeline()
     h = handler.PromptHandler("{} test", service.Loopback())
     p.add_handler(h)
-    r = p.handle("input")
+    r = p.handle(["input"])
     assert r.status == handler.HandlerStatus.SUCCESS
-    assert r.input == "input"
+    assert len(r.input) == 1
+    assert r.input[0] == "input"
     assert r.prompt[0] == "input test"
     assert r.output[0] == "input test"
 
 
 def test_condition_pipeline():
     p = pipeline.Pipeline()
-    def fn(input, service_unused):
-        if input == "input":
-            return handler.HandlerResult(handler.HandlerStatus.SUCCESS_TRUE, input, input, input)
-        else:
-            return handler.HandlerResult(handler.HandlerStatus.SUCCESS_FALSE, input, input, input)
 
+    def fn(input, service_unused):
+        return input == "input"
     h = handler.ConditionHandler(fn, service.Loopback())
+
     p.add_handler(h)
-    r = p.handle("input")
+    r = p.handle(["input"])
     assert r.status == handler.HandlerStatus.SUCCESS_TRUE
     assert r.status == handler.HandlerStatus.SUCCESS
-    assert r.input == "input"
+    assert len(r.input) == 1
+    assert r.input[0] == "input"
     assert r.prompt[0] == "input"
     assert r.output[0] == "input"
 
-    r = p.handle("not input")
+    r = p.handle(["not input"])
     assert r.status == handler.HandlerStatus.SUCCESS_FALSE
     assert r.status != handler.HandlerStatus.SUCCESS
-    assert r.input == "not input"
+    assert len(r.input) == 1
+    assert r.input[0] == "not input"
     assert r.prompt[0] == "not input"
     assert r.output[0] == "not input"
 
@@ -50,10 +52,7 @@ def test_multi_pipeline():
     p = pipeline.Pipeline()
     s = service.Loopback()
     def fn(input, service_unused):
-        if input == "input":
-            return handler.HandlerResult(handler.HandlerStatus.SUCCESS_TRUE, input, input, input)
-        else:
-            return handler.HandlerResult(handler.HandlerStatus.SUCCESS_FALSE, input, input, input)
+        return input == "input"
     h = handler.ConditionHandler(fn, s)
     name = p.add_handler(h)
 
@@ -64,15 +63,17 @@ def test_multi_pipeline():
     name3 = p.add_handler(h3, name, handler.HandlerStatus.SUCCESS_FALSE)
 
 
-    r = p.handle("input")
+    r = p.handle(["input"])
     assert r.status == handler.HandlerStatus.SUCCESS
-    assert r.input == "input"
+    assert len(r.input) == 1
+    assert r.input[0] == "input"
     assert r.prompt[0] == "input success"
     assert r.output[0] == "input success"
 
-    r = p.handle("not input")
+    r = p.handle(["not input"])
     assert r.status == handler.HandlerStatus.SUCCESS
-    assert r.input == "not input"
+    assert len(r.input) == 1
+    assert r.input[0] == "not input"
     assert r.prompt[0] == "not input fail"
     assert r.output[0] == "not input fail"
 
@@ -94,15 +95,30 @@ def test_classification_pipeline():
     h3 = handler.PromptHandler("{} fail", service.Loopback())
     p.add_handler(h3, name, "category2")
 
-    r = p.handle("input1")
+    r = p.handle(["input1"])
     assert r.status == handler.HandlerStatus.SUCCESS
-    assert r.input == "input1"
+    assert len(r.input) == 1
+    assert r.input[0] == "input1"
     assert r.prompt[0] == "input1 success"
     assert r.output[0] == "input1 success"
 
 
+def split_join_pipeline():
+    p = pipeline.Pipeline()
+    h = handler.SplitHandler(",", service.Loopback())
+    name = p.add_handler(h)
+    h2 = handler.PromptHandler("{} test", service.Loopback())
+    name2 = p.add_handler(h2, name)
+    h3 = handler.JoinHandler(",", service.Loopback())
+    name3 = p.add_handler(h3, name2)
 
+    r = p.handle(["input1,input2,input3"])
+    assert r.status == handler.HandlerStatus.SUCCESS
+    assert len(r.input) == 3
+    assert len(r.output) == 1
+    assert r.input[0] == "input1 test"
+    assert r.input[1] == "input2 test"
+    assert r.input[2] == "input3 test"
+    assert r.output[0] == "input1 test,input2 test,input3 test"
 
-
-
-
+    

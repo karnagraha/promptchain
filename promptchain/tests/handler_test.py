@@ -2,29 +2,26 @@ from promptchain import handler, service
 
 def test_handler():
     h = handler.Handler(service.Loopback())
-    r = h.handle("input")
+    r = h.handle(["input"])
     assert r.status == handler.HandlerStatus.SUCCESS
     assert r.output[0] == "input"
 
 def test_prompt_handler():
     h = handler.PromptHandler("test", service.Loopback())
-    r = h.handle("input")
+    r = h.handle(["input"])
     assert r.status == handler.HandlerStatus.SUCCESS
     assert r.output[0] == "test"
 
 def test_condition_handler():
     def fn(input, service_unused):
-        if input == "input":
-            return handler.HandlerResult(handler.HandlerStatus.SUCCESS_TRUE, input, input, input)
-        else:
-            return handler.HandlerResult(handler.HandlerStatus.SUCCESS_FALSE, input, input, input)
+        return input == "input"
     h = handler.ConditionHandler(fn, service.Loopback())
-    r = h.handle("input")
+    r = h.handle(["input"])
     assert r.status == handler.HandlerStatus.SUCCESS_TRUE
     assert r.status == handler.HandlerStatus.SUCCESS
     assert r.output[0] == "input"
 
-    r = h.handle("not input")
+    r = h.handle(["not input"])
     assert r.status == handler.HandlerStatus.SUCCESS_FALSE
     assert r.status != handler.HandlerStatus.SUCCESS
     assert r.output[0] == "not input"
@@ -35,9 +32,9 @@ def test_classification_handler():
         "cat2": ["input3", "input4"],
     }
     h = handler.ClassificationHandler(classifications, service.Loopback())
-    r = h.handle("input")
+    r = h.handle(["input"])
     assert r.status == handler.HandlerStatus.SUCCESS_CLASSIFIED
-    assert r.input == "input"
+    assert r.input[0] == "input"
     # can't really test the rest of these on loopback very well
     assert "cat1" in r.prompt[0]
     assert "cat2" in r.prompt[0]
@@ -45,3 +42,21 @@ def test_classification_handler():
     assert "input2" in r.prompt[0]
     assert "input3" in r.prompt[0]
     assert "input4" in r.prompt[0]
+
+
+def test_split_handler():
+    h = handler.SplitHandler(r"\. *", service.Loopback())
+    r = h.handle(["input1. input2."])
+    assert r.status == handler.HandlerStatus.SUCCESS
+    assert len(r.input) == 1
+    assert len(r.output) == 2
+    assert r.output[0] == "input1"
+    assert r.output[1] == "input2"
+
+def test_join_handler():
+    h = handler.JoinHandler(". ", service.Loopback())
+    r = h.handle(["input1", "input2"])
+    assert r.status == handler.HandlerStatus.SUCCESS
+    assert len(r.input) == 2
+    assert len(r.output) == 1
+    assert r.output[0] == "input1. input2"

@@ -39,8 +39,7 @@ class Pipeline:
                 next_handler_key = result.output[0]
             else:
                 # Otherwise update text for next query.
-                # TODO: This needs to be changed when handlers with multiple outputs are supported.
-                text = result.output[0]
+                text = result.output
 
             # Find the next handler in the chain
             try:
