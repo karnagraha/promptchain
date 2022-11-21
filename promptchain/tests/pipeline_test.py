@@ -2,7 +2,7 @@ from promptchain import pipeline, handler, service
 
 def test_pipeline():
     p = pipeline.Pipeline()
-    h = handler.Handler(service.Loopback())
+    h = handler.Handler()
     p.add_handler(h)
     r = p.handle(["input"])
     assert r.status == handler.HandlerStatus.SUCCESS
@@ -13,7 +13,7 @@ def test_pipeline():
 
 def test_prompt_pipeline():
     p = pipeline.Pipeline()
-    h = handler.PromptHandler("{} test", service.Loopback())
+    h = handler.PromptHandler("{} test")
     p.add_handler(h)
     r = p.handle(["input"])
     assert r.status == handler.HandlerStatus.SUCCESS
@@ -28,7 +28,7 @@ def test_condition_pipeline():
 
     def fn(input, service_unused):
         return input == "input"
-    h = handler.ConditionHandler(fn, service.Loopback())
+    h = handler.ConditionHandler(fn)
 
     p.add_handler(h)
     r = p.handle(["input"])
@@ -90,9 +90,9 @@ def test_classification_pipeline():
     name = p.add_handler(h)
 
     # set a downstream result for each result from the condition handler
-    h2 = handler.PromptHandler("{} success", service.Loopback())
+    h2 = handler.PromptHandler("{} success")
     p.add_handler(h2, name, "category1")
-    h3 = handler.PromptHandler("{} fail", service.Loopback())
+    h3 = handler.PromptHandler("{} fail")
     p.add_handler(h3, name, "category2")
 
     r = p.handle(["input1"])
@@ -105,11 +105,11 @@ def test_classification_pipeline():
 
 def split_join_pipeline():
     p = pipeline.Pipeline()
-    h = handler.SplitHandler(",", service.Loopback())
+    h = handler.SplitHandler(",")
     name = p.add_handler(h)
-    h2 = handler.PromptHandler("{} test", service.Loopback())
+    h2 = handler.PromptHandler("{} test")
     name2 = p.add_handler(h2, name)
-    h3 = handler.JoinHandler(",", service.Loopback())
+    h3 = handler.JoinHandler(",")
     name3 = p.add_handler(h3, name2)
 
     r = p.handle(["input1,input2,input3"])
